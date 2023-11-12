@@ -1,9 +1,32 @@
-<link rel="stylesheed" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
+<!DOCTYPE html>
+<html>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""></script>
+<head>
+    <title> Leaflet sample</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        c />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
 
-<div id="map"></div>
+<body>
+    <div id="map" style="width:900px; height:580px;"></div>
+    <script>
+        // Creating map options
+        var mapOptions = {
+            center: [17.385044, 78.486671],
+            zoom: 10
+        }
+
+        // Creating map objet
+        var map = new L.map('map', mapOptions);
+
+        // Creating a Layer object
+        var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+
+        // Adding layer to the map
+        map.addLayer(layer)
+    </script>
+</body>
+
+</html>

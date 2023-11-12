@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="introduction">
+        <style>
+            p {
+                max-width: 80ch;
+                word-wrap: break-word;
+            }
+        </style>
+        <h1>
+            Inledning
+        </h1>
+        <p title="HEJ!">
+            I Sydvästra Umeå finns det ett antal lendingssträckor där det finns problem med kapaciteten på
+            ledningsnätet. Vid regn med en återkomsttid på 10 år dämmer det ovanför hjässan på tre ställen, se kartan
+            nedan. I figuren visas även vattennivån vid olika flöden.
+        </p>
+        <div id="map" style="width:900px; height:580px;"></div>
+        <script>
+            const map = L.map('map', {
+                center: [-29.50, 145],
+                zoom: 3.5,
+                scrollWheelZoom: false
+            });
+            const marker1 = L.marker([-37.699450, 176.279420]).bindPopup('Whitehaven Beach, Whitsunday Island').addTo(map);
+            const marker2 = L.marker([-27.643310, 153.305140]).bindPopup('Turquoise Bay Exmouth, Australia').addTo(map);
+            const basemaps = {
+                StreetView: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }),
+                Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?', { layers: 'TOPO-WMS' }),
+                Places: L.tileLayer.wms('http://ows.mundialis.de/services/service?', { layers: 'OSM-Overlay-WMS' })
+            }
+            L.control.layers(basemaps).addTo(map);
+            basemaps.Topography.addTo(map);
+        </script>
+    </div>
+
+</body>
+
+</html>
