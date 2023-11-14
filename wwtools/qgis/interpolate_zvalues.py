@@ -44,6 +44,8 @@ def interpolate_zvalues(_uplvl, _dwlvl):
 
     layer = duplicate_layer()
     layer.startEditing()
+    # Loopa inte igenom sista linjen utan lägg bara till
+    # dwLvl längst ned.
     for feature in layer.getFeatures():
         points_with_z = list()
         geom = feature.geometry()
