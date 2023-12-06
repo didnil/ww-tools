@@ -2,7 +2,7 @@ from pathlib import Path
 import geopandas as gpd
 import rasterio
 import numpy as np
-from rasterio.mask import mask
+import rasterio.mask
 
 
 # Tilldelar polygon-datasetet med de samplade värdena
@@ -40,11 +40,12 @@ def zonal_statistics(polygons, raster_data, statistics=["max", "min", "average"]
         List with the statistics to calculate. Currently max, min and average are supported
 
     """
-
+    original_columns = list(polygons.columns)
     update_values = dict()
     for idx in polygons.index:
-        filtered_raster, filtered_raster_transform = mask(
-            raster_data, [polygons.loc[idx, "geometry"]], crop=True
+        filtered_raster, filtered_raster_transform = rasterio.mask.mask(
+            raster_data, [polygons.loc[idx, "geometry"]], crop=True,
+            all_touched=True
         )
         filtered_raster_meta = raster_data.meta
         filtered_values = filtered_raster[filtered_raster > raster_data.meta["nodata"]]
@@ -55,7 +56,8 @@ def zonal_statistics(polygons, raster_data, statistics=["max", "min", "average"]
         }
 
     polygons = set_sampled_values(polygons, update_values)
-    return polygons.loc[:, statistics]
+
+    return polygons.loc[:, original_columns + statistics]
 
 
 # %% [markdown]
