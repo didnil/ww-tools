@@ -115,14 +115,16 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
     dfWaste = df.loc[df["system"].str.upper() == "WASTE"]
     dfStorm = df.loc[df["system"].str.upper() == "STORM"]
 
-    dfWater.loc[dfWater["RMAT"].isnull(), "RMAT"] = "Övrigt/Okänt A"
+    # dfWater.loc[dfWater["RMAT"].isnull(), "RMAT"] = "Övrigt/Okänt A"
+    dfWater.loc[dfWater["RMAT"].isnull(), "RMAT"] = "Okänt"
     translator = {
         "PE": ["PEH", "PEM", "PEL"],
         "PLAST": ["PP"],
         "Gråjärn": ["GJJ", "GJUTJ", "JÄRN", "Gråjärn"],
         "Segjärn": ["SEGJ", "SGJ", "Segjärn"],
         "PVC": ["PVC"],
-        "Övrigt/Okänt A": ["CU", "LERA", "BTG", "STÅL", "GAP", "ETERNI", "GALV", '---', 'GALV'],
+        "Okänt": ['---'],
+        "Övrigt A": ["CU", "LERA", "BTG", "STÅL", "GAP", "ETERNI", "GALV"]
     }
     for key in translator.keys():
         if key == "Gråjärn":
@@ -153,7 +155,8 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
             for val in translator[key]:
                 dfWater = renameValues(dfWater, val, key)
 
-    dfWaste.loc[dfWaste["RMAT"].isnull(), "RMAT"] = "S-Övrigt/Okänt A"
+    # dfWaste.loc[dfWaste["RMAT"].isnull(), "RMAT"] = "S-Övrigt/Okänt A"
+    dfWaste.loc[dfWaste["RMAT"].isnull(), "RMAT"] = "S-Okänt"
     translator = {
         "S-Betong": ["BTG", "S-Betong"],
         "S-Plast": [
@@ -167,7 +170,7 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
             "PRAGMA",
             "S-Plast",
         ],
-        "S-Övrigt/Okänt A": [
+        "S-Övrigt A": [
             "GAP",
             "GJJ",
             "GJUTJ",
@@ -187,7 +190,14 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
             '---',
             np.nan,
         ],
-        "S-Övrigt/Okänt B": [
+        "S-Okänt": [
+            "ÖVRIG",
+            " ",
+            "OKÄ",
+            '---',
+            np.nan,
+        ],
+        "S-Tryck": [ # Tidigare S-Övrigt/Okänt B
             "PVC_tryck",
             "SEGJ_tryck",
             "GJJ_tryck",
@@ -213,11 +223,12 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
             for val in translator[key]:
                 dfWaste = renameValues(dfWaste, val, key)
 
-    dfStorm.loc[dfStorm["RMAT"].isnull(), "RMAT"] = "D-Övrigt/Okänt A"
+    # dfStorm.loc[dfStorm["RMAT"].isnull(), "RMAT"] = "D-Övrigt/Okänt A"
+    dfStorm.loc[dfStorm["RMAT"].isnull(), "RMAT"] = "D-Okänt"
     translator = {
         "D-Betong": ["BTG", "D-Betong"],
         "D-Plast": ["PVC", "PLAST", "PP", "PEM", "PE", "PEH", "PEL", "PRAGMA"],
-        "D-Övrigt/Okänt A": [
+        "D-Övrigt A": [
             "GAP",
             "GJJ",
             "LERA",
@@ -225,8 +236,10 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
             "PLÅT",
             "SEGJ",
             "SGJ",
-            " ",
             "GLAS",
+        ],
+        "D-Okänt": [
+            " ",
             "OKÄ",
             '---',
             np.nan,
@@ -248,6 +261,11 @@ def prepareForLtp(dfTmp, constructionYear="ANLAR"):
 
     return df
 
+
+def merge_oter_unknown(dfTmp, _rmat, other, unknown, new_name):
+    df = dfTmp.copy(deep=True)
+    df.loc[(df[_rmat] == other) | (df[_rmat] == unknown), _rmat] = new_name
+    return df
 
 def prepEditColumn(dfTmp):
     """
@@ -373,7 +391,13 @@ def prepareForExport(df):
     ----------
     df : DataFrame
     """
-    dfGrp = df.groupby(by = ['RMAT', 'period']).agg({'LENGTH': ['sum']}).unstack(
-        level=0, fill_value=0).droplevel([0, 1], axis=1) 
-    dfGrp.index = dfGrp.index.left.year
+    dfGrp = df.groupby(by = ['RMAT', 'period'], observed=False).agg({'LENGTH': ['sum']}).unstack(
+        level=0, fill_value=0).droplevel([0, 1], axis=1)
+    
+    # dfGrp.index = dfGrp.index.left.year # Fungerar inte vid nullvärden.
+    
+    left_values = dfGrp.index.categories.left
+    dfGrp.index = left_values[dfGrp.index.codes]
+
+
     return dfGrp
